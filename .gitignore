@@ -1,0 +1,8 @@
+# Byggutdata
+build/
+release/
+tests/*.exe
+tests/*.pdb
+*.exe
+# Lokala hemligheter (WiFi-lösenord) – se BMS_v2/secrets.example.h
+BMS_v2/secrets.h
