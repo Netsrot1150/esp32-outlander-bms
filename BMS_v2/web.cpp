@@ -9,6 +9,7 @@
 #include "settings_json.h"
 #include "web_ui.h"
 #include "clock.h"
+#include "ring_stream.h"
 
 static AsyncWebServer s_server(80);
 
@@ -16,6 +17,27 @@ static const char* levelName(uint8_t lv) { return lv == LV_ALARM ? "ALARM" : "WA
 
 static double r1(double v) { return round(v * 10.0) / 10.0; }
 static double r2(double v) { return round(v * 100.0) / 100.0; }
+
+static RingView histView(const HistRing& h) {
+  return RingView{(const uint8_t*)h.buf, h.cap, h.head, h.count, h.total, sizeof(HistRec)};
+}
+
+static RingView cellLogView() {
+  return RingView{(const uint8_t*)g_cellLog.buf, g_cellLog.cap, g_cellLog.head, g_cellLog.count, g_cellLog.total,
+                  sizeof(CellLogRec)};
+}
+
+// Skickar en ögonblicksbild av en ring. view() läses under AppLock för varje bit.
+template <typename V>
+static void sendRing(AsyncWebServerRequest* req, const RingSnap& snap, V view) {
+  AsyncWebServerResponse* r = req->beginResponse(
+      "application/octet-stream", ringSnapSize(snap), [snap, view](uint8_t* buf, size_t maxLen, size_t index) -> size_t {
+        AppLock lock;
+        return ringSnapRead(snap, view(), index, buf, maxLen);
+      });
+  r->addHeader("Cache-Control", "no-store");
+  req->send(r);
+}
 
 static void locStr(char* out, size_t n, CellLoc l) {
   snprintf(out, n, "M%uC%u", (unsigned)(l.module + 1), (unsigned)(l.cell + 1));
@@ -372,35 +394,29 @@ void webBegin() {
         if (final && !Update.hasError()) Update.end(true);
       });
 
+  // Historik och cellogg skickas i bitar direkt ur ringbufferten (känd längd). Tidigare byggdes hela
+  // svaret i minnet (upp till 24 kB) och kapades tyst när minnet inte räckte.
   s_server.on("/api/history", HTTP_GET, [](AsyncWebServerRequest* req) {
     const bool live = req->hasParam("range") && req->getParam("range")->value() == "10m";
-    AsyncResponseStream* r = req->beginResponseStream("application/octet-stream", 1460);
-    r->addHeader("Cache-Control", "no-store");
+    RingSnap snap;
     {
       AppLock lock;
-      const HistRing& h = live ? g_histLive : g_hist24;
-      const uint32_t n = h.count;
-      r->write((const uint8_t*)&n, sizeof(n));
-      for (uint16_t i = 0; i < h.count; i++) r->write((const uint8_t*)&histAt(h, i), sizeof(HistRec));
+      snap = ringSnapTake(histView(live ? g_histLive : g_hist24), nullptr, 0);
     }
-    req->send(r);
+    sendRing(req, snap, [live]() { return histView(live ? g_histLive : g_hist24); });
   });
 
   // Celloggen: 4 byte antal, sedan CellLogRec (72 byte) äldst först. Sista posten är den pågående
   // timmen (medel hittills) om det finns värden.
   s_server.on("/api/cells", HTTP_GET, [](AsyncWebServerRequest* req) {
-    AsyncResponseStream* r = req->beginResponseStream("application/octet-stream", 1460);
-    r->addHeader("Cache-Control", "no-store");
+    RingSnap snap;
     {
       AppLock lock;
       CellLogRec cur;
       const bool hasCur = cellAccumMake(g_cellAcc, histStamp(g_snap.timeKnown, g_snap.epoch, g_snap.nowMs / 1000), cur);
-      const uint32_t n = g_cellLog.count + (hasCur ? 1 : 0);
-      r->write((const uint8_t*)&n, sizeof(n));
-      for (uint16_t i = 0; i < g_cellLog.count; i++) r->write((const uint8_t*)&clAt(g_cellLog, i), sizeof(CellLogRec));
-      if (hasCur) r->write((const uint8_t*)&cur, sizeof(cur));
+      snap = ringSnapTake(cellLogView(), hasCur ? (const uint8_t*)&cur : nullptr, sizeof(cur));
     }
-    req->send(r);
+    sendRing(req, snap, cellLogView);
   });
 
   AsyncCallbackJsonWebHandler* timePost =

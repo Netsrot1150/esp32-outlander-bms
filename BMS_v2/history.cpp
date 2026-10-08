@@ -7,12 +7,14 @@ void histInit(HistRing& r, HistRec* storage, uint16_t cap) {
   r.cap = cap;
   r.head = 0;
   r.count = 0;
+  r.total = 0;
 }
 
 void histPush(HistRing& r, const HistRec& rec) {
   r.buf[r.head] = rec;
   r.head = (uint16_t)((r.head + 1) % r.cap);
   if (r.count < r.cap) r.count++;
+  r.total++;
 }
 
 const HistRec& histAt(const HistRing& r, uint16_t i) {

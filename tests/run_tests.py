@@ -12,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKETCH = os.path.join(ROOT, "BMS_v2")
 ARDUINOJSON = os.path.join(os.path.expanduser("~"), "Documents", "Arduino", "libraries", "ArduinoJson", "src")
 # Rena moduler (ingen Arduino-kod) som testas på PC. Moduler som inte finns ännu hoppas över.
-PURE = ["cmu.cpp", "settings.cpp", "settings_json.cpp", "balancer.cpp", "alarms.cpp", "current.cpp", "soc.cpp", "history.cpp", "celllog.cpp",
+PURE = ["cmu.cpp", "settings.cpp", "settings_json.cpp", "balancer.cpp", "alarms.cpp", "current.cpp", "soc.cpp", "history.cpp", "celllog.cpp", "ring_stream.cpp",
         "packet_builder.cpp", "sim.cpp"]
 
 

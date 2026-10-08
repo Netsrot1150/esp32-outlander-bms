@@ -28,6 +28,7 @@ struct HistRing {
   uint16_t cap;
   uint16_t head;    // nästa skrivposition
   uint16_t count;
+  uint32_t total;   // antal poster som någonsin lagts till (för ring_stream)
 };
 
 void histInit(HistRing& r, HistRec* storage, uint16_t cap);

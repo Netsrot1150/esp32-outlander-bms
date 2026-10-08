@@ -27,6 +27,7 @@ struct CellLogRing {
   uint16_t    cap;
   uint16_t    head;
   uint16_t    count;
+  uint32_t    total;   // antal poster som någonsin lagts till (för ring_stream)
 };
 
 void clInit(CellLogRing& r, CellLogRec* storage, uint16_t cap);

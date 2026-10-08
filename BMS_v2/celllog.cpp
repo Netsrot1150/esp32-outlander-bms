@@ -6,12 +6,14 @@ void clInit(CellLogRing& r, CellLogRec* storage, uint16_t cap) {
   r.cap = cap;
   r.head = 0;
   r.count = 0;
+  r.total = 0;
 }
 
 void clPush(CellLogRing& r, const CellLogRec& rec) {
   r.buf[r.head] = rec;
   r.head = (uint16_t)((r.head + 1) % r.cap);
   if (r.count < r.cap) r.count++;
+  r.total++;
 }
 
 const CellLogRec& clAt(const CellLogRing& r, uint16_t i) {

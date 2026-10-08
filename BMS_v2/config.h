@@ -1,7 +1,7 @@
 #pragma once
 // BMS v2 – gemensamma konstanter. Ingen Arduino-kod här (används även av PC-testerna).
 
-#define FW_VERSION "2.3.2"
+#define FW_VERSION "2.3.3"
 
 // Avkommentera för att köra utan batteri: CAN-tasken genererar 8 simulerade CMU:er.
 // (tools/build.py --sim sätter den via kompilatorflagga.)
