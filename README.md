@@ -2,7 +2,11 @@
 
 Battery management firmware for an **ESP32-C3** that monitors **8 Mitsubishi Outlander PHEV battery modules (CMUs)** over CAN through an MCP2515, for a 64S lithium pack (~250 V).
 
-**Status:** running in my VW Transporter (powering a big car audio system). Current version: **2.3.2**.
+**Status:** running in my VW Transporter (powering a big car audio system). Current version: **2.3.3**.
+
+![Web UI overview: state of charge, current, pack voltage and all 64 cell voltages per module](docs/img/web-ui.png)
+
+*The built-in web UI (shown here with `tools/mock_server.py`, no ESP32 needed).*
 
 ### Features
 - Reads all 64 cell voltages, module temperatures and balancing status (4- and 8-cell CMUs)
