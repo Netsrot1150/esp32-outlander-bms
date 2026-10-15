@@ -6,3 +6,12 @@ tests/*.pdb
 *.exe
 # Lokala hemligheter (WiFi-lösenord) – se BMS_v2/secrets.example.h
 BMS_v2/secrets.h
+
+# KiCad
+hw/bms-kort/*-backups/
+hw/bms-kort/*.kicad_prl
+hw/bms-kort/fp-info-cache
+hw/bms-kort/*.lck
+hw/gen/__pycache__/
+hw/bms-kort/placerad.kicad_pro
+hw/tools/

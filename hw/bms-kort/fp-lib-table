@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "bms")(type "KiCad")(uri "${KIPRJMOD}/../lib/bms.pretty")(options "")(descr "BMS-kortets egna"))
+)
